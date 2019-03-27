@@ -1,0 +1,22 @@
+Package: stepmywedge
+Title: Data structures and load functions for managing stepped wedge cluster-randomised trials.
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Matthew",
+           family = "Moore",
+           role = c("aut", "cre"),
+           email = "matthew.moore@auckland.ac.nz")
+Description: Data structures and load functions for managing stepped wedge cluster-randomised trials.
+License: MIT
+Encoding: UTF-8
+LazyData: true,
+Depends: 
+  data.table (>= 1.12.0)
+Imports: 
+  data.table (>= 1.12.0),
+  ggplot2 (>= 3.1.0),
+  caTools (>= 1.17.1),
+  coin (>= 1.2),
+  combinat (>= 0.0),
+  hms (>= 0.4.2)
+RoxygenNote: 6.1.1
