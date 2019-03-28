@@ -499,7 +499,7 @@ SW.Study = setRefClass(
       return(perm.dt)
     },
 
-    generate.stat.dt = function(max.r, outcome.col.name = "outcome", intervention.col.name = "group", stat.per.site = F, statistic = 'WMWU', other.predictors = NUL) {
+    generate.stat.dt = function(max.r, outcome.col.name = "outcome", intervention.col.name = "group", stat.per.site = F, statistic = 'WMWU', other.predictors = NULL) {
       "Wrapper for function generate.stat.dt in analysis.r"
       generate.perm.dt(max.r)
       stat.dt <<- stepmywedge::generate.stat.dt(max.r,
