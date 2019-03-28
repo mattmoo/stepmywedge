@@ -69,6 +69,8 @@ different clusters.}
 \describe{
 \item{\code{add.clusters(clusters.to.add)}}{Add clusters to the experiment.}
 
+\item{\code{cut.data.dt.time.to.periods(period.starts)}}{Cuts the continuous time variable in data.dt into periods, takes a vector of start times for cut}
+
 \item{\code{faceted.line.plot(dot.size = 2, ylims = NULL, outcome.name = "outcome")}}{Plots the study as a line plot with facets for different sites. ylims and outcome.name are mainly for animations.}
 
 \item{\code{generate.cluster.dt()}}{Generate a data.table of the clusters in the study.}
@@ -84,7 +86,8 @@ different clusters.}
 \item{\code{generate.site.sim.parameters()}}{Generate simultation parameters for each site.}
 
 \item{\code{generate.stat.dt(max.r, outcome.col.name = "outcome",
-  intervention.col.name = "group", stat.per.site = T)}}{Wrapper for function generate.stat.dt in analysis.r}
+  intervention.col.name = "group", stat.per.site = F, statistic = "WMWU",
+  other.predictors = NUL)}}{Wrapper for function generate.stat.dt in analysis.r}
 
 \item{\code{generate.study.dt()}}{Generate a data.table of the study.}
 

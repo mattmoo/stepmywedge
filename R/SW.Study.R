@@ -488,13 +488,18 @@ SW.Study = setRefClass(
       return(p)
     },
 
+    cut.data.dt.time.to.periods = function(period.starts) {
+      "Cuts the continuous time variable in data.dt into periods, takes a vector of start times for cut"
+      data.dt[, period := cut(time, period.starts, include.lowest = T, right = F, ordered_result = T)]
+    },
+
     generate.perm.dt = function(max.r) {
       "Wrapper for function generate.perm.dt in analysis.r"
       perm.dt <<- stepmywedge::generate.perm.dt(study.dt = study.dt, max.r = max.r)
       return(perm.dt)
     },
 
-    generate.stat.dt = function(max.r, outcome.col.name = "outcome", intervention.col.name = "group", stat.per.site = T) {
+    generate.stat.dt = function(max.r, outcome.col.name = "outcome", intervention.col.name = "group", stat.per.site = F, statistic = 'WMWU', other.predictors = NUL) {
       "Wrapper for function generate.stat.dt in analysis.r"
       generate.perm.dt(max.r)
       stat.dt <<- stepmywedge::generate.stat.dt(max.r,
@@ -504,7 +509,9 @@ SW.Study = setRefClass(
                                                 cluster.dt = cluster.dt,
                                                 study.dt = study.dt,
                                                 perm.dt = perm.dt,
-                                                stat.per.site)
+                                                stat.per.site = stat.per.site,
+                                                statistic = statistic,
+                                                other.predictors = other.predictors)
       return(stat.dt)
     }
   )

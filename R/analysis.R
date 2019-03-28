@@ -8,11 +8,13 @@
 #' @param intervention.col.name NAme of the column containing the intervention
 #'   (i.e. has levels "control" and "intervention")
 #' @param stat.per.site If TRUE, the statistic will be calculated separately for
-#'   each site on each permutation, if not site will be ignored.
+#'   each site on each permutation, if not site will be ignored. MAy not be a
+#'   good idea to use TRUE
+#' @param statistic Can be WMWU or ANOVA.
 #' @return A data.table with the statistic value at each permutation (with zero
 #'   as the unpermuted comparison). May be divided by site if requested.
 #' @export
-generate.stat.dt = function(max.r, outcome.col.name, intervention.col.name, data.dt, cluster.dt, study.dt, perm.dt = NULL, stat.per.site = F) {
+generate.stat.dt = function(max.r, outcome.col.name, intervention.col.name, data.dt, cluster.dt, study.dt, perm.dt = NULL, stat.per.site = F, statistic = 'WMWU', other.predictors = NULL) {
 
   #It will probably streamline the calculations if I precalculate the intervention
   #and control groups for each site for each cluster (i.e. sequence).
@@ -21,6 +23,12 @@ generate.stat.dt = function(max.r, outcome.col.name, intervention.col.name, data
   #This could be vectorised, but won't be the most compute-heavy part anyway.
   #Iterate through the different assignments of site to clusters, making tables of
   #what the groups would look like.
+
+  #No per site calculations for ANOVA
+  #It could probably be implemented, but it might not be a good idea.
+  if (statistic == 'ANOVA') {
+    stat.per.site = F
+  }
 
   #Make a wee progress bar.
   message(paste0("Calculating ", nrow(hypothetical.data.dt), " hypothetical site data tables..."))
@@ -106,7 +114,8 @@ generate.stat.dt = function(max.r, outcome.col.name, intervention.col.name, data
   t = Sys.time()
 
   #Formula for the stats
-  form = as.formula(paste(outcome.col.name,intervention.col.name, sep = ' ~ '))
+  # form = as.formula(paste(outcome.col.name,intervention.col.name, sep = ' ~ '))
+  form = as.formula(paste(outcome.col.name,'~', paste(c(intervention.col.name, other.predictors), collapse = '+')))
 
   # for (perm.ind in 0:max.r) {
   perform.permutation.step = function(perm.ind) {
@@ -125,22 +134,33 @@ generate.stat.dt = function(max.r, outcome.col.name, intervention.col.name, data
           by.x = c("site", "cluster.perm"),
           by.y = c("site", "cluster")
         )$data.dt
+        #Make sure to remove transition!
       )[get(intervention.col.name) != "transition"]
     } else {
       perm.data.dt = data.dt[get(intervention.col.name) != "transition"]
     }
 
     #Put the statistic in the table we setup.
-    if (!stat.per.site) {
+    if (statistic == 'ANOVA') {
       data.table::set(x = stat.dt,
                       i = which(stat.dt[,perm.num == perm.ind]),
                       j = "stat",
-                      value = coin::statistic(coin::wilcox_test(form, data = perm.data.dt)))
+                      value = anova(test.wilcoxon.ANOVA.form(data.dt = perm.data.dt, form = form))$`F value`[1])
+
+    } else if (statistic == 'WMWU') { #WMWMU
+      if (!stat.per.site) {
+        data.table::set(x = stat.dt,
+                        i = which(stat.dt[,perm.num == perm.ind]),
+                        j = "stat",
+                        value = coin::statistic(coin::wilcox_test(form, data = perm.data.dt)))
+      } else {
+        data.table::set(x = stat.dt,
+                        i = which(stat.dt[,perm.num == perm.ind]),
+                        j = "stat",
+                        value = perm.data.dt[,.(stat = coin::statistic(coin::wilcox_test(form, .SD, exact=F))), by = site][,stat])
+      }
     } else {
-      data.table::set(x = stat.dt,
-                      i = which(stat.dt[,perm.num == perm.ind]),
-                      j = "stat",
-                      value = perm.data.dt[,.(stat = coin::statistic(coin::wilcox_test(form, .SD, exact=F))), by = site][,stat])
+      stop(paste(statistic, 'is not a supported statistic'))
     }
 
     #Permutation 0 is the actual data.
@@ -249,5 +269,33 @@ test.stat.table = function(stat.dt) {
   result = list(
     p = which(stat.dt[order(-abs(stat)),stat] == stat.dt[1,stat])/nrow(stat.dt)
   )
+
+}
+
+
+#' Applies a two-way ANOVA to Wilcoxon ranks
+#'
+#' @param data.dt A data.table with results from each participant, an outcome, a
+#'   group (i.e. effect of interest), and a time
+#' @return Results of the two-way ANOVA.
+#'
+#' @export
+test.wilcoxon.ANOVA = function(data.dt, outcome.col.name = 'outcome', intervention.col.name = 'group', other.predictors = 'time') {
+
+  form = as.formula(paste(outcome.col.name,'~',intervention.col.name, ' + ', paste(other.predictors, collapse = '+')))
+  return(test.wilcoxon.ANOVA.form(data = data.dt, form = form))
+
+}
+
+#' Applies a two-way ANOVA to Wilcoxon ranks
+#'
+#' @param data.dt A data.table with results from each participant, an outcome, a
+#'   group (i.e. effect of interest), and a time
+#' @return Results of the two-way ANOVA.
+#'
+#' @export
+test.wilcoxon.ANOVA.form = function(data.dt, form) {
+
+  return(aov(form, data = data.dt))
 
 }

@@ -6,7 +6,8 @@
 clusters.}
 \usage{
 generate.stat.dt(max.r, outcome.col.name, intervention.col.name, data.dt,
-  cluster.dt, study.dt, perm.dt = NULL, stat.per.site = F)
+  cluster.dt, study.dt, perm.dt = NULL, stat.per.site = F,
+  statistic = "WMWU", other.predictors = NULL)
 }
 \arguments{
 \item{max.r}{How many permutations?}
@@ -17,7 +18,10 @@ generate.stat.dt(max.r, outcome.col.name, intervention.col.name, data.dt,
 (i.e. has levels "control" and "intervention")}
 
 \item{stat.per.site}{If TRUE, the statistic will be calculated separately for
-each site on each permutation, if not site will be ignored.}
+each site on each permutation, if not site will be ignored. MAy not be a
+good idea to use TRUE}
+
+\item{statistic}{Can be WMWU or ANOVA.}
 }
 \value{
 A data.table with the statistic value at each permutation (with zero
