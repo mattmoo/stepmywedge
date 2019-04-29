@@ -87,7 +87,7 @@ different clusters.}
 
 \item{\code{generate.stat.dt(max.r, outcome.col.name = "outcome",
   intervention.col.name = "group", stat.per.site = F, statistic = "WMWU",
-  other.predictors = NUL)}}{Wrapper for function generate.stat.dt in analysis.r}
+  other.predictors = NULL, ...)}}{Wrapper for function generate.stat.dt in analysis.r}
 
 \item{\code{generate.study.dt()}}{Generate a data.table of the study.}
 
@@ -106,6 +106,8 @@ different clusters.}
 \item{\code{get.sites(cluster.name = "")}}{Gets a list of site objects, returning all sites for all cluster if no cluster.name provided.}
 
 \item{\code{get.study.dt(force.generate = F)}}{Get a data.table of the study.}
+
+\item{\code{rank.data.dt()}}{Gives ranks to outcomes in data.dt}
 
 \item{\code{set.clusters(clusters)}}{Replace clusters in the cluster, clusters should be provided as a SW.Cluster object.}
 

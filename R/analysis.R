@@ -11,16 +11,29 @@
 #'   each site on each permutation, if not site will be ignored. MAy not be a
 #'   good idea to use TRUE
 #' @param statistic Can be WMWU or ANOVA.
+#' @param sort.input Will sort the input by outcome (by reference), which slightly speeds ranking/
 #' @return A data.table with the statistic value at each permutation (with zero
 #'   as the unpermuted comparison). May be divided by site if requested.
 #' @export
-generate.stat.dt = function(max.r, outcome.col.name, intervention.col.name, data.dt, cluster.dt, study.dt, perm.dt = NULL, stat.per.site = F, statistic = 'WMWU', other.predictors = NULL) {
+generate.stat.dt = function(max.r,
+                            outcome.col.name,
+                            intervention.col.name,
+                            data.dt,
+                            cluster.dt,
+                            study.dt,
+                            perm.dt = NULL,
+                            stat.per.site = F,
+                            statistic = 'WMWU',
+                            other.predictors = NULL,
+                            sort.input = T,
+                            progress.bar = T) {
 
   #It will probably streamline the calculations if I precalculate the intervention
   #and control groups for each site for each cluster (i.e. sequence).
   #This could fail for very large data sets.
   hypothetical.data.dt = data.table::data.table(expand.grid(site = study.dt[,levels(site)],cluster = study.dt[,levels(cluster)]))
   #This could be vectorised, but won't be the most compute-heavy part anyway.
+
   #Iterate through the different assignments of site to clusters, making tables of
   #what the groups would look like.
 
@@ -30,9 +43,15 @@ generate.stat.dt = function(max.r, outcome.col.name, intervention.col.name, data
     stat.per.site = F
   }
 
+  if (sort.input == T) {
+    setorder(data.dt, outcome)
+  }
+
   #Make a wee progress bar.
   message(paste0("Calculating ", nrow(hypothetical.data.dt), " hypothetical site data tables..."))
-  pb = txtProgressBar(style = 3, char = '|')
+  if (progress.bar == T) {
+    pb = txtProgressBar(style = 3, char = '|')
+  }
   t = Sys.time()
 
   for (row.ind in 1:nrow(hypothetical.data.dt)) {
@@ -69,9 +88,14 @@ generate.stat.dt = function(max.r, outcome.col.name, intervention.col.name, data
                     value = list(list(site.cluster.dt)))
 
     #Update progress
-    setTxtProgressBar(pb, row.ind/nrow(hypothetical.data.dt))
+    if (progress.bar == T) {
+      setTxtProgressBar(pb, row.ind/nrow(hypothetical.data.dt))
+    }
   }
-  close(pb)
+
+  if (progress.bar == T) {
+    close(pb)
+  }
   elapsed = Sys.time()-t
   message(paste("Time elapsed: "),hms::as.hms(elapsed))
   message("")
@@ -109,7 +133,10 @@ generate.stat.dt = function(max.r, outcome.col.name, intervention.col.name, data
 
   #Make a wee progress bar.
   message(paste0("Calculating ", max.r, " permutations..."))
-  pb = txtProgressBar(style = 3, char = '|')
+
+  if (progress.bar == T) {
+    pb = txtProgressBar(style = 3, char = '|')
+  }
   next.progress = 0
   t = Sys.time()
 
@@ -119,6 +146,7 @@ generate.stat.dt = function(max.r, outcome.col.name, intervention.col.name, data
 
   # for (perm.ind in 0:max.r) {
   perform.permutation.step = function(perm.ind) {
+    t2 = Sys.time()
     #Permutation 0 is the actual data.
     if (perm.ind>0) {
       #Rename the relevant permutation's column to pick it out.
@@ -139,6 +167,7 @@ generate.stat.dt = function(max.r, outcome.col.name, intervention.col.name, data
     } else {
       perm.data.dt = data.dt[get(intervention.col.name) != "transition"]
     }
+    # message(c('t1_d = ', Sys.time() - t2))
 
     #Put the statistic in the table we setup.
     if (statistic == 'ANOVA') {
@@ -149,19 +178,32 @@ generate.stat.dt = function(max.r, outcome.col.name, intervention.col.name, data
 
     } else if (statistic == 'WMWU') { #WMWMU
       if (!stat.per.site) {
+        # message(c('t2_d = ', Sys.time() - t2))
         data.table::set(x = stat.dt,
                         i = which(stat.dt[,perm.num == perm.ind]),
                         j = "stat",
                         value = coin::statistic(coin::wilcox_test(form, data = perm.data.dt)))
+        # message(c('t3_d = ', Sys.time() - t2))
       } else {
         data.table::set(x = stat.dt,
                         i = which(stat.dt[,perm.num == perm.ind]),
                         j = "stat",
                         value = perm.data.dt[,.(stat = coin::statistic(coin::wilcox_test(form, .SD, exact=F))), by = site][,stat])
       }
+    } else if (statistic == 'WMWU.DT') { #WMWMU
+      # if (!stat.per.site) {
+        # message(c('t2_d = ', Sys.time() - t2))
+
+        data.table::set(x = stat.dt,
+                        i = which(stat.dt[,perm.num == perm.ind]),
+                        j = "stat",
+                        value =  test.wilcox.dt(perm.data.dt)$z)
+        # message(c('t3_d = ', Sys.time() - t2))
+      # }
     } else {
       stop(paste(statistic, 'is not a supported statistic'))
     }
+
 
     #Permutation 0 is the actual data.
     if (perm.ind>0) {
@@ -171,19 +213,28 @@ generate.stat.dt = function(max.r, outcome.col.name, intervention.col.name, data
                            new = old.col.name)
     }
 
+    # message(c('t4_d = ', Sys.time() - t2))
+
     #Update progress (max 100 times)
-    if (max.r<=100) {
-      setTxtProgressBar(pb, perm.ind/max.r)
-    } else {
-      if (perm.ind/max.r >= next.progress) {
+
+    if (progress.bar == T) {
+      if (max.r<=100) {
         setTxtProgressBar(pb, perm.ind/max.r)
-        next.progress = next.progress + 0.01
+      } else {
+        if (perm.ind/max.r >= next.progress) {
+          setTxtProgressBar(pb, perm.ind/max.r)
+          next.progress = next.progress + 0.01
+        }
       }
     }
   }
+
   lapply(0L:max.r, perform.permutation.step)
 
-  close(pb)
+
+  if (progress.bar == T) {
+    close(pb)
+  }
   elapsed = Sys.time()-t
   message(paste("Time elapsed: "),hms::as.hms(elapsed))
   message("")
@@ -194,6 +245,76 @@ generate.stat.dt = function(max.r, outcome.col.name, intervention.col.name, data
                   value = scale(stat.dt$stat, center = T, scale = T))
 
   return(stat.dt)
+}
+
+#' Do a wilcox test on a data.table.
+#'
+#' @param data.dt data.table with two-level grouping factor 'group' and outcome 'outcome''
+#' @param two.sided Do a two sided test?
+#' @param tie.correction Apply tie correction (slightly slower, but sometimes necessary). If NULL, tie correction will be applied if there are.
+#' @param sort.input Sorts the input by reference, this enables faster ranking (i.e. speeds permutation test)
+#' @return A data.table containing statistics, including z score and theoretical p value (e.g. z.dt$z).
+#'
+#' @export
+test.wilcox.dt = function(data.dt,
+                          two.sided = T,
+                          tie.correction = NULL,
+                          sort.input = F) {
+
+  #What proportion of values should be unique to apply tie correction (if not
+  #explicitly enabled/disabled)
+  tie.correction.threshold = .9
+
+  t = Sys.time()
+
+  if (sort.input) {
+    setorder(data.dt, outcome)
+  }
+  if (is.null(tie.correction)) {
+    tie.correction = length(data.dt[,unique(outcome)]) < nrow(data.dt)*tie.correction.threshold
+  }
+
+  # message(paste('t0 = ', Sys.time()-t ))
+
+  #Do WMW
+  #Assign ranks to outcomes
+  data.dt[, rank := frank(outcome, ties.method = 'average')]
+
+
+  #Make a data.table with rank sums and n per group.
+  wmw.dt = data.dt[,.(R = sum(rank), n = .N), by = group]
+
+
+  #Calculate U for each group
+  data.table::set(x = wmw.dt,
+                  j = 'u',
+                  value = wmw.dt[,R - (n*(n+1))/2])
+
+
+  #Get minimum U, n for each group, and also theoretical mean.
+  z.dt = cbind(wmw.dt[u == min(u), .(n.a=as.numeric(n), u = u)],
+               wmw.dt[u == max(u), .(n.b=as.numeric(n))],
+               wmw.dt[,.(m.u = prod(n)/2)])
+
+  #Calculate theoretical SD, correcting for errors if requested.
+  if (tie.correction == F) {
+    z.dt[,sd.u := wmw.dt[,sqrt(prod(n)*(sum(n)+1)/12)]]
+  } else {
+    z.dt[,sd.u := sqrt((n.a*n.b/((n.a+n.b)*(n.a+n.b-1))) * ((((n.a+n.b)^3-(n.a+n.b))/12)-sum(data.dt[,(.N^3-.N)/12, by = outcome])))]
+  }
+
+
+  #Calculate z score for U
+  data.table::set(x = z.dt,
+                  j = 'z',
+                  value = z.dt[,(u - m.u)/sd.u])
+
+
+  data.table::set(x = z.dt,
+                  j = 'p',
+                  value = z.dt[,pnorm(z) * (1+two.sided)])
+
+  return(z.dt)
 }
 
 #' Generate a table that holds a number of ways in which to permute sites to

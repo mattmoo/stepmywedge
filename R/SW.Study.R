@@ -410,6 +410,12 @@ SW.Study = setRefClass(
       }
     },
 
+    rank.data.dt = function() {
+      'Gives ranks to outcomes in data.dt'
+      data.table::set(x = data.dt,
+                      j = 'rank',
+                      value = frank(data.dt[,outcome]))
+    },
 
     update.groups.data.dt = function() {
       'Updates the group of data.dt according to timing of clusters.'
@@ -499,7 +505,7 @@ SW.Study = setRefClass(
       return(perm.dt)
     },
 
-    generate.stat.dt = function(max.r, outcome.col.name = "outcome", intervention.col.name = "group", stat.per.site = F, statistic = 'WMWU', other.predictors = NULL) {
+    generate.stat.dt = function(max.r, outcome.col.name = "outcome", intervention.col.name = "group", stat.per.site = F, statistic = 'WMWU', other.predictors = NULL, ...) {
       "Wrapper for function generate.stat.dt in analysis.r"
       generate.perm.dt(max.r)
       stat.dt <<- stepmywedge::generate.stat.dt(max.r,
@@ -511,7 +517,7 @@ SW.Study = setRefClass(
                                                 perm.dt = perm.dt,
                                                 stat.per.site = stat.per.site,
                                                 statistic = statistic,
-                                                other.predictors = other.predictors)
+                                                other.predictors = other.predictors, ...)
       return(stat.dt)
     }
   )
