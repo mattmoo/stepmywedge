@@ -8,7 +8,7 @@ clusters.}
 generate.stat.dt(max.r, outcome.col.name, intervention.col.name, data.dt,
   cluster.dt, study.dt, perm.dt = NULL, stat.per.site = F,
   statistic = "WMWU", other.predictors = NULL, sort.input = T,
-  progress.bar = T)
+  progress.bar = T, ...)
 }
 \arguments{
 \item{max.r}{How many permutations?}
@@ -25,6 +25,8 @@ good idea to use TRUE}
 \item{statistic}{Can be WMWU or ANOVA.}
 
 \item{sort.input}{Will sort the input by outcome (by reference), which slightly speeds ranking/}
+
+\item{...}{Passed on to the test}
 }
 \value{
 A data.table with the statistic value at each permutation (with zero

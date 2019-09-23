@@ -12,6 +12,7 @@
 #'   good idea to use TRUE
 #' @param statistic Can be WMWU or ANOVA.
 #' @param sort.input Will sort the input by outcome (by reference), which slightly speeds ranking/
+#' @param ... Passed on to the test
 #' @return A data.table with the statistic value at each permutation (with zero
 #'   as the unpermuted comparison). May be divided by site if requested.
 #' @export
@@ -26,7 +27,8 @@ generate.stat.dt = function(max.r,
                             statistic = 'WMWU',
                             other.predictors = NULL,
                             sort.input = T,
-                            progress.bar = T) {
+                            progress.bar = T,
+                            ...) {
 
   #It will probably streamline the calculations if I precalculate the intervention
   #and control groups for each site for each cluster (i.e. sequence).
@@ -171,33 +173,37 @@ generate.stat.dt = function(max.r,
 
     #Put the statistic in the table we setup.
     if (statistic == 'ANOVA') {
-      data.table::set(x = stat.dt,
-                      i = which(stat.dt[,perm.num == perm.ind]),
-                      j = "stat",
-                      value = anova(test.wilcoxon.ANOVA.form(data.dt = perm.data.dt, form = form))$`F value`[1])
+      stat = anova(test.wilcoxon.ANOVA.form(data.dt = perm.data.dt, form = form))$`F value`[1]
+      # data.table::set(x = stat.dt,
+      #                 i = which(stat.dt[,perm.num == perm.ind]),
+      #                 j = "stat",
+      #                 value = anova(test.wilcoxon.ANOVA.form(data.dt = perm.data.dt, form = form))$`F value`[1])
 
     } else if (statistic == 'WMWU') { #WMWMU
       if (!stat.per.site) {
         # message(c('t2_d = ', Sys.time() - t2))
-        data.table::set(x = stat.dt,
-                        i = which(stat.dt[,perm.num == perm.ind]),
-                        j = "stat",
-                        value = coin::statistic(coin::wilcox_test(form, data = perm.data.dt)))
+        # data.table::set(x = stat.dt,
+        #                 i = which(stat.dt[,perm.num == perm.ind]),
+        #                 j = "stat",
+        #                 value = coin::statistic(coin::wilcox_test(form, data = perm.data.dt)))
+        stat = coin::statistic(coin::wilcox_test(form, data = perm.data.dt))
         # message(c('t3_d = ', Sys.time() - t2))
       } else {
-        data.table::set(x = stat.dt,
-                        i = which(stat.dt[,perm.num == perm.ind]),
-                        j = "stat",
-                        value = perm.data.dt[,.(stat = coin::statistic(coin::wilcox_test(form, .SD, exact=F))), by = site][,stat])
+        # data.table::set(x = stat.dt,
+        #                 i = which(stat.dt[,perm.num == perm.ind]),
+        #                 j = "stat",
+        #                 value = perm.data.dt[,.(stat = coin::statistic(coin::wilcox_test(form, .SD, exact=F))), by = site][,stat])
+        stat = perm.data.dt[,.(stat = coin::statistic(coin::wilcox_test(form, .SD, exact=F))), by = site][,stat]
       }
     } else if (statistic == 'WMWU.DT') { #WMWMU
       # if (!stat.per.site) {
         # message(c('t2_d = ', Sys.time() - t2))
 
-        data.table::set(x = stat.dt,
-                        i = which(stat.dt[,perm.num == perm.ind]),
-                        j = "stat",
-                        value =  test.wilcox.dt(perm.data.dt)$z)
+      # data.table::set(x = stat.dt,
+      #                   i = which(stat.dt[,perm.num == perm.ind]),
+      #                   j = "stat",
+      #                   value =  test.wilcox.dt(perm.data.dt)$z)
+      stat = test.wilcox.dt(perm.data.dt)$z
         # message(c('t3_d = ', Sys.time() - t2))
       # }
     } else {
@@ -227,10 +233,17 @@ generate.stat.dt = function(max.r,
         }
       }
     }
+
+    return(stat)
   }
 
-  lapply(0L:max.r, perform.permutation.step)
+  # result = lapply(0L:max.r, perform.permutation.step)
+  # print(result)
+  data.table::set(x = stat.dt,
+                  j = "stat",
+                  value = unlist(mclapply(0L:max.r, perform.permutation.step)))
 
+  # stat.dt = cbind(stat.dt, rbindlist(result))
 
   if (progress.bar == T) {
     close(pb)

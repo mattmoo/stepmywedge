@@ -456,7 +456,7 @@ SW.Study = setRefClass(
                   cluster.dt$intervention.start.time,
                   cluster.dt$cluster.end.time)
       #Basic plot
-      p = ggplot2::ggplot(data=data.dt, ggplot2::aes_string(x='time', y=outcome.name, color='cluster')) +
+      p = ggplot2::ggplot(data=data.dt[order(cluster)], ggplot2::aes_string(x='time', y=outcome.name, color='cluster')) +
         ggplot2::geom_point(alpha=.3, size = dot.size) +
         ggplot2::theme(legend.position="none",
               panel.grid.minor = ggplot2::element_blank()) +

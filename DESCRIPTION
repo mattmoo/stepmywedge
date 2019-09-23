@@ -18,5 +18,6 @@ Imports:
   caTools (>= 1.17.1),
   coin (>= 1.2),
   combinat (>= 0.0),
-  hms (>= 0.4.2)
+  hms (>= 0.4.2),
+  parallel
 RoxygenNote: 6.1.1
