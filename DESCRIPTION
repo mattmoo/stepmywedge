@@ -11,13 +11,13 @@ License: MIT
 Encoding: UTF-8
 LazyData: true,
 Depends: 
-  data.table (>= 1.12.0)
+  data.table (>= 1.12.0),
+  parallel
 Imports: 
   data.table (>= 1.12.0),
   ggplot2 (>= 3.1.0),
   caTools (>= 1.17.1),
   coin (>= 1.2),
   combinat (>= 0.0),
-  hms (>= 0.4.2),
-  parallel
-RoxygenNote: 6.1.1
+  hms (>= 0.4.2)
+RoxygenNote: 7.0.0

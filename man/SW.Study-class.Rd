@@ -111,7 +111,19 @@ different clusters.}
 
 \item{\code{set.clusters(clusters)}}{Replace clusters in the cluster, clusters should be provided as a SW.Cluster object.}
 
-\item{\code{set.sim.parameters(sim.ppt.per.unit.time.mean = 10,
+\item{\code{set.sim.parameters(sim.ppt.per.unit.time.mean = NA_integer_,
+  sim.ppt.per.unit.time.sd = NA_integer_,
+  sim.normal.preintervention.mean = NA_integer_,
+  sim.normal.intervention.effect.mean = NA_integer_,
+  sim.normal.intervention.effect.sd = NA_integer_,
+  sim.site.effect.mean = NA_integer_, sim.site.effect.sd = NA_integer_,
+  sim.time.effect.per.unit.mean = NA_integer_,
+  sim.time.effect.per.unit.sd = NA_integer_,
+  sim.site.effect.force.sign = NA_integer_,
+  sim.individual.noise.mean = NA_integer_,
+  sim.individual.noise.sd = NA_integer_)}}{Set simulation parameters for the study.}
+
+\item{\code{set.sim.parameters.default(sim.ppt.per.unit.time.mean = 10,
   sim.ppt.per.unit.time.sd = 2, sim.normal.preintervention.mean = 15,
   sim.normal.intervention.effect.mean = 2,
   sim.normal.intervention.effect.sd = 0.6, sim.site.effect.mean = 0,

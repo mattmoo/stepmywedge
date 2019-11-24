@@ -8,25 +8,26 @@
 # source('R/SW.Site.R')
 # source('R/SW.Trial.R')
 
-devtools::document()
-devtools::install(dependencies = F, reload = T)
+smw.dir = 'D:/Seafile/My Library/dev/packages/stepmywedge'
+devtools::document(pkg = smw.dir)
+devtools::install(pkg = smw.dir, dependencies = F, reload = T)
 library(stepmywedge)
 
 set.seed(1)
 
-tsd = new('Timed.Sampling.Dist')
-
-testDist = data.table(values = c(1,2,3),
-                      weights = c(2,1,1),
-                      time.begin = 1,
-                      time.end = 3)
-tsd$set.sampling.dt(testDist)
-
-tsd$add.sampling.dist(values = c(4,5,6),
-                      weights = c(2,1,1),
-                      time.begin = 2,
-                      time.end = 4)
-tsd$get.value()
+#Testing a timed sampling distribution
+# tsd = new('Timed.Sampling.Dist')
+# testDist = data.table(values = c(1,2,3),
+#                       weights = c(2,1,1),
+#                       time.begin = 1,
+#                       time.end = 3)
+# tsd$set.sampling.dt(testDist)
+#
+# tsd$add.sampling.dist(values = c(4,5,6),
+#                       weights = c(2,1,1),
+#                       time.begin = 2,
+#                       time.end = 4)
+# tsd$get.value()
 
 
 trial01 = generate.trial(nClusters = 5,
@@ -44,16 +45,16 @@ trial01$set.sim.parameters(sim.ppt.per.unit.time.mean = 1.7,
                            sim.time.effect.per.unit.mean = 0,
                            sim.time.effect.per.unit.sd = 0.005,
                            sim.site.effect.force.sign = c(-1,0,+1)[3],
-                           sim.individual.noise.mean = 2,
-                           sim.individual.noise.sd = .4)
+                           sim.individual.noise.mean = .5,
+                           sim.individual.noise.sd = .1)
 trial01$generate.site.sim.parameters()
-trial01$generate.sim.data()
+trial01$generate.sim.data.normal()
 
 trial01$generate.stat.dt(100)
 
 
 
-t = test.stat.table.per.site(trial01$stat.dt)
+# t = test.stat.table.per.site(trial01$stat.dt)
 
 
 # p = trial01$faceted.line.plot(outcome.name = 'outcome')

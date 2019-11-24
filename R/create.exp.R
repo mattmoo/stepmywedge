@@ -7,7 +7,7 @@
 #' @return Stepped wedge experiment
 #' @export
 generate.trial = function(nClusters, sitesPerCluster, timePerStep, transitionDuration = 0) {
-  result = SW.Trial()
+  result = SW.Study()
   siteNumber = 1
   interventionStep = 1
 

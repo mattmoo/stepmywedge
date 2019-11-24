@@ -173,8 +173,35 @@ SW.Study = setRefClass(
         warning('Duplicated site names are present.')
       }
     },
+    set.sim.parameters = function(sim.ppt.per.unit.time.mean = NA_integer_,
+                                  sim.ppt.per.unit.time.sd = NA_integer_,
+                                  sim.normal.preintervention.mean = NA_integer_,
+                                  sim.normal.intervention.effect.mean = NA_integer_,
+                                  sim.normal.intervention.effect.sd = NA_integer_,
+                                  sim.site.effect.mean = NA_integer_,
+                                  sim.site.effect.sd = NA_integer_,
+                                  sim.time.effect.per.unit.mean = NA_integer_,
+                                  sim.time.effect.per.unit.sd = NA_integer_,
+                                  sim.site.effect.force.sign = NA_integer_,
+                                  sim.individual.noise.mean = NA_integer_,
+                                  sim.individual.noise.sd = NA_integer_) {
+      "Set simulation parameters for the study."
+      if (!is.na(sim.ppt.per.unit.time.mean)) sim.ppt.per.unit.time.mean <<- sim.ppt.per.unit.time.mean
+      if (!is.na(sim.ppt.per.unit.time.sd)) sim.ppt.per.unit.time.sd <<- sim.ppt.per.unit.time.sd
+      if (!is.na(sim.normal.preintervention.mean)) sim.normal.preintervention.mean <<- sim.normal.preintervention.mean
+      if (!is.na(sim.normal.intervention.effect.mean)) sim.normal.intervention.effect.mean <<- sim.normal.intervention.effect.mean
+      if (!is.na(sim.normal.intervention.effect.sd)) sim.normal.intervention.effect.sd <<- sim.normal.intervention.effect.sd
+      if (!is.na(sim.site.effect.mean)) sim.site.effect.mean <<- sim.site.effect.mean
+      if (!is.na(sim.site.effect.sd)) sim.site.effect.sd <<- sim.site.effect.sd
+      if (!is.na(sim.time.effect.per.unit.mean)) sim.time.effect.per.unit.mean <<- sim.time.effect.per.unit.mean
+      if (!is.na(sim.time.effect.per.unit.sd))  sim.time.effect.per.unit.sd <<- sim.time.effect.per.unit.sd
+      if (!is.na(sim.site.effect.force.sign))  sim.site.effect.force.sign <<- sim.site.effect.force.sign
+      if (!is.na(sim.individual.noise.mean)) sim.individual.noise.mean <<- sim.individual.noise.mean
+      if (!is.na(sim.individual.noise.sd)) sim.individual.noise.sd <<- sim.individual.noise.sd
 
-    set.sim.parameters = function(sim.ppt.per.unit.time.mean = 10,
+    },
+
+    set.sim.parameters.default = function(sim.ppt.per.unit.time.mean = 10,
                                   sim.ppt.per.unit.time.sd = 2,
                                   sim.normal.preintervention.mean = 15,
                                   sim.normal.intervention.effect.mean = 2,
@@ -423,10 +450,13 @@ SW.Study = setRefClass(
       #   print(colnames(data.dt))
       #   data.dt <<- data.table:::merge.data.table(data.dt, site.dt, by = 'site')
       # }
-      data.dt <<- data.table:::merge.data.table(data.dt, site.dt, by = 'site')
+      print(data.dt)
+      data.dt <<- data.table:::merge.data.table(data.dt, site.dt, by = c('site','cluster'))
 
+      print(data.dt)
       #Get intervention cases and group
       data.dt <<- data.table:::merge.data.table(data.dt, cluster.dt[,.(cluster,transition.start.time,intervention.start.time)], by = 'cluster')
+
 
       data.table::set(x = data.dt,
                       j = 'group',

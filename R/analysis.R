@@ -401,7 +401,7 @@ test.stat.table.per.site = function(stat.dt) {
 test.stat.table = function(stat.dt) {
 
   result = list(
-    p = which(stat.dt[order(-abs(stat)),stat] == stat.dt[1,stat])/nrow(stat.dt)
+    p = max(which(stat.dt[order(-abs(stat)),stat] == stat.dt[1,stat]))/nrow(stat.dt)
   )
 
 }
