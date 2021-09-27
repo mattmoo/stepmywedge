@@ -39,9 +39,13 @@ A Reference Class to represent a cluster in a stepped-wedge cluster-randomised t
 
 \item{\code{get.sites()}}{Get sites in the cluster.}
 
-\item{\code{initialize(name = "Cluster", cluster.start.time = NaN,
-  transition.start.time = NaN, intervention.start.time = NaN,
-  cluster.end.time = NaN)}}{Initialize cluster with a name.}
+\item{\code{initialize(
+  name = "Cluster",
+  cluster.start.time = NaN,
+  transition.start.time = NaN,
+  intervention.start.time = NaN,
+  cluster.end.time = NaN
+)}}{Initialize cluster with a name.}
 
 \item{\code{set.sites(sites)}}{Replace sites in the cluster, sites should be provided as a SW.Site object.}
 }}

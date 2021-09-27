@@ -451,11 +451,14 @@ SW.Study = setRefClass(
       #   data.dt <<- data.table:::merge.data.table(data.dt, site.dt, by = 'site')
       # }
       print(data.dt)
-      data.dt <<- data.table:::merge.data.table(data.dt, site.dt, by = c('site','cluster'))
+      print(site.dt)
+      data.dt <<- data.table:::merge.data.table(data.dt, site.dt, by = c('site'))
 
       print(data.dt)
       #Get intervention cases and group
-      data.dt <<- data.table:::merge.data.table(data.dt, cluster.dt[,.(cluster,transition.start.time,intervention.start.time)], by = 'cluster')
+      data.dt <<- data.table:::merge.data.table(data.dt,
+                                                cluster.dt[,.(cluster,transition.start.time,intervention.start.time)],
+                                                by = 'cluster')
 
 
       data.table::set(x = data.dt,

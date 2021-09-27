@@ -24,8 +24,12 @@ sampling.dt}
 \section{Methods}{
 
 \describe{
-\item{\code{add.sampling.dist(values, weights = c(), time.begin = NA_real_,
-  time.end = NA_real_)}}{Adds a sampling distribution at the specified time. If either time limit is NA, there is no limit. Weights and values should be vectors of same length.}
+\item{\code{add.sampling.dist(
+  values,
+  weights = c(),
+  time.begin = NA_real_,
+  time.end = NA_real_
+)}}{Adds a sampling distribution at the specified time. If either time limit is NA, there is no limit. Weights and values should be vectors of same length.}
 
 \item{\code{get.quantile.dt(at.quantile = 0.5)}}{Gives the quantiles at all time periods, at at.quantile (e.g. 0.5 for median).}
 

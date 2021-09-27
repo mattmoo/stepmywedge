@@ -4,8 +4,12 @@
 \alias{test.wilcoxon.ANOVA}
 \title{Applies a two-way ANOVA to Wilcoxon ranks}
 \usage{
-test.wilcoxon.ANOVA(data.dt, outcome.col.name = "outcome",
-  intervention.col.name = "group", other.predictors = "time")
+test.wilcoxon.ANOVA(
+  data.dt,
+  outcome.col.name = "outcome",
+  intervention.col.name = "group",
+  other.predictors = "time"
+)
 }
 \arguments{
 \item{data.dt}{A data.table with results from each participant, an outcome, a

@@ -4,8 +4,7 @@
 \alias{generate.trial}
 \title{Create a stepped wedge experiment structure.}
 \usage{
-generate.trial(nClusters, sitesPerCluster, timePerStep,
-  transitionDuration = 0)
+generate.trial(nClusters, sitesPerCluster, timePerStep, transitionDuration = 0)
 }
 \arguments{
 \item{nClusters}{How many clusters?}

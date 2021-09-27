@@ -4,9 +4,15 @@
 \alias{faceted.line.plot.dt}
 \title{Plot a stepped wedge design.}
 \usage{
-faceted.line.plot.dt(dataDT, studyDT, studyParams = NULL, ylims = NULL,
-  outcomeName = "outcome.05", dotSize = 2, scatterColVar = c("site",
-  "day")[[1]])
+faceted.line.plot.dt(
+  dataDT,
+  studyDT,
+  studyParams = NULL,
+  ylims = NULL,
+  outcomeName = "outcome.05",
+  dotSize = 2,
+  scatterColVar = c("site", "day")[[1]]
+)
 }
 \arguments{
 \item{dataDT}{Data from the SW study}

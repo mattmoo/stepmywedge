@@ -20,4 +20,4 @@ Imports:
   coin (>= 1.2),
   combinat (>= 0.0),
   hms (>= 0.4.2)
-RoxygenNote: 7.0.0
+RoxygenNote: 7.1.1
