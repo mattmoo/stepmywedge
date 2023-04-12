@@ -19,5 +19,6 @@ Imports:
   caTools (>= 1.17.1),
   coin (>= 1.2),
   combinat (>= 0.0),
-  hms (>= 0.4.2)
-RoxygenNote: 7.1.1
+  hms (>= 0.4.2),
+  methods
+RoxygenNote: 7.2.1

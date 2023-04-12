@@ -314,7 +314,7 @@ SW.Study = setRefClass(
       update.groups.data.dt()
     },
 
-    #TODO: This should proooobably be an implementation of I.Sampler, would need to
+    #TODO: This should probably be an implementation of I.Sampler, would need to
     #figure out how to retain intermediate values for animation.
     generate.sim.data.normal = function(save.intermediates = T) {
       "Generates synthetic data, can save the intermediate values for a nice animation if you want."
@@ -434,6 +434,13 @@ SW.Study = setRefClass(
                                                    intermediate.outcome.04,
                                                    intermediate.outcome.05,
                                                    intermediate.outcome.06)]
+      } else {
+        data.dt <<- sim.data.intermediate.dt[,list(id,
+                                                   cluster,
+                                                   time,
+                                                   site,
+                                                   group,
+                                                   outcome)]
       }
     },
 
@@ -450,11 +457,8 @@ SW.Study = setRefClass(
       #   print(colnames(data.dt))
       #   data.dt <<- data.table:::merge.data.table(data.dt, site.dt, by = 'site')
       # }
-      print(data.dt)
-      print(site.dt)
-      data.dt <<- data.table:::merge.data.table(data.dt, site.dt, by = c('site'))
+      data.dt <<- data.table:::merge.data.table(data.dt, site.dt, by = c('site', 'cluster'))
 
-      print(data.dt)
       #Get intervention cases and group
       data.dt <<- data.table:::merge.data.table(data.dt,
                                                 cluster.dt[,.(cluster,transition.start.time,intervention.start.time)],

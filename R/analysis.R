@@ -10,8 +10,7 @@
 #' @param stat.per.site If TRUE, the statistic will be calculated separately for
 #'   each site on each permutation, if not site will be ignored. MAy not be a
 #'   good idea to use TRUE
-#' @param statistic Can be WMWU or ANOVA.
-#' @param sort.input Will sort the input by outcome (by reference), which slightly speeds ranking/
+#' @param statistic Can be WMWU, ANOVA, or mean_diff.
 #' @param ... Passed on to the test
 #' @return A data.table with the statistic value at each permutation (with zero
 #'   as the unpermuted comparison). May be divided by site if requested.
@@ -26,7 +25,7 @@ generate.stat.dt = function(max.r,
                             stat.per.site = F,
                             statistic = 'WMWU',
                             other.predictors = NULL,
-                            sort.input = T,
+                            # sort.input = T,
                             progress.bar = T,
                             ...) {
 
@@ -45,9 +44,9 @@ generate.stat.dt = function(max.r,
     stat.per.site = F
   }
 
-  if (sort.input == T) {
-    setorder(data.dt, outcome)
-  }
+  # if (sort.input == T) {
+  setorderv(data.dt, cols = c(outcome.col.name, intervention.col.name))
+  # }
 
   #Make a wee progress bar.
   message(paste0("Calculating ", nrow(hypothetical.data.dt), " hypothetical site data tables..."))
@@ -195,6 +194,12 @@ generate.stat.dt = function(max.r,
         #                 value = perm.data.dt[,.(stat = coin::statistic(coin::wilcox_test(form, .SD, exact=F))), by = site][,stat])
         stat = perm.data.dt[,.(stat = coin::statistic(coin::wilcox_test(form, .SD, exact=F))), by = site][,stat]
       }
+    } else if (statistic == 'mean_diff') { #Mean difference
+      if (!stat.per.site) {
+        stat = perm.data.dt[, mean(get(outcome.col.name)), by = c( intervention.col.name)][, diff(V1)]
+      } else {
+        stat = perm.data.dt[, mean(get(outcome.col.name)), by = c('site', intervention.col.name)][, diff(V1), by = site][, V1]
+      }
     } else if (statistic == 'WMWU.DT') { #WMWMU
       # if (!stat.per.site) {
         # message(c('t2_d = ', Sys.time() - t2))
@@ -265,14 +270,12 @@ generate.stat.dt = function(max.r,
 #' @param data.dt data.table with two-level grouping factor 'group' and outcome 'outcome''
 #' @param two.sided Do a two sided test?
 #' @param tie.correction Apply tie correction (slightly slower, but sometimes necessary). If NULL, tie correction will be applied if there are.
-#' @param sort.input Sorts the input by reference, this enables faster ranking (i.e. speeds permutation test)
 #' @return A data.table containing statistics, including z score and theoretical p value (e.g. z.dt$z).
 #'
 #' @export
 test.wilcox.dt = function(data.dt,
                           two.sided = T,
-                          tie.correction = NULL,
-                          sort.input = F) {
+                          tie.correction = NULL) {
 
   #What proportion of values should be unique to apply tie correction (if not
   #explicitly enabled/disabled)
@@ -280,9 +283,9 @@ test.wilcox.dt = function(data.dt,
 
   t = Sys.time()
 
-  if (sort.input) {
+  # if (sort.input) {
     setorder(data.dt, outcome)
-  }
+  # }
   if (is.null(tie.correction)) {
     tie.correction = length(data.dt[,unique(outcome)]) < nrow(data.dt)*tie.correction.threshold
   }

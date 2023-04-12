@@ -8,9 +8,9 @@
 # source('R/SW.Site.R')
 # source('R/SW.Trial.R')
 
-smw.dir = 'D:/Seafile/My Library/dev/packages/stepmywedge'
-devtools::document(pkg = smw.dir)
-devtools::install(pkg = smw.dir, dependencies = F, reload = T)
+# smw.dir = '.'
+# devtools::document(pkg = smw.dir)
+# devtools::install(pkg = smw.dir, dependencies = F, reload = T)
 library(stepmywedge)
 
 set.seed(1)
@@ -29,6 +29,9 @@ set.seed(1)
 #                       time.end = 4)
 # tsd$get.value()
 
+intervention.col.name = 'group'
+outcome.col.name = 'outcome'
+
 
 trial01 = generate.trial(nClusters = 5,
                          sitesPerCluster = 2,
@@ -38,7 +41,7 @@ trial01$generate.study.dt()
 trial01$set.sim.parameters(sim.ppt.per.unit.time.mean = 1.7,
                            sim.ppt.per.unit.time.sd = .2,
                            sim.normal.preintervention.mean = 15,
-                           sim.normal.intervention.effect.mean = 1.75,
+                           sim.normal.intervention.effect.mean = .75,
                            sim.normal.intervention.effect.sd = .6,
                            sim.site.effect.mean = 0,
                            sim.site.effect.sd = 2,
@@ -48,11 +51,23 @@ trial01$set.sim.parameters(sim.ppt.per.unit.time.mean = 1.7,
                            sim.individual.noise.mean = .5,
                            sim.individual.noise.sd = .1)
 trial01$generate.site.sim.parameters()
-trial01$generate.sim.data.normal()
+trial01$generate.sim.data.normal(save.intermediates = FALSE)
 
-trial01$generate.stat.dt(100)
+# a = trial01$data.dt[group != 'transition',.(stat = coin::statistic(coin::wilcox_test(outcome ~ group, .SD, exact=F))), by = site][,stat]
+# b = coin::statistic(coin::wilcox_test(outcome ~ group, data = trial01$data.dt[group != 'transition']))
+
+# perm.data.dt = trial01$data.dt[group != 'transition']
+
+# c = perm.data.dt[, mean(get(outcome.col.name)), by = c('site', intervention.col.name)
+#                  ][, diff(V1), by = site
+#                    ][, V1]
+# c = perm.data.dt[group != 'transition',.(stat = coin::statistic(coin::wilcox_test(outcome ~ group, .SD, exact=F))), by = site][,stat]
+# b = coin::statistic(coin::wilcox_test(outcome ~ group, data = trial01$data.dt[group != 'transition']))
+trial01$generate.stat.dt(1000, statistic = 'mean_diff')
+trial01$generate.stat.dt(1000, statistic = 'WMWU')
 
 
+p = trial01$stat.dt[permuted == TRUE, mean(stat <= trial01$stat.dt[permuted == 'FALSE', stat])]
 
 # t = test.stat.table.per.site(trial01$stat.dt)
 
