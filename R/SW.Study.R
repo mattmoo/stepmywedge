@@ -453,11 +453,13 @@ SW.Study = setRefClass(
 
     update.groups.data.dt = function() {
       'Updates the group of data.dt according to timing of clusters.'
-      # if (!'site' %in% colnames(data.dt)) {
-      #   print(colnames(data.dt))
-      #   data.dt <<- data.table:::merge.data.table(data.dt, site.dt, by = 'site')
-      # }
-      data.dt <<- data.table:::merge.data.table(data.dt, site.dt, by = c('site', 'cluster'))
+      if (!'cluster' %in% colnames(data.dt)) {
+        print(colnames(data.dt))
+        data.dt <<- data.table:::merge.data.table(data.dt, site.dt, by = 'cluster')
+      }
+      # data.dt <<- data.table:::merge.data.table(data.dt, site.dt[, .(site, cluster)], by = c('site'))
+      # print(1)
+      # data.dt <<- data.table:::merge.data.table(data.dt, site.dt, by = c('site'))
 
       #Get intervention cases and group
       data.dt <<- data.table:::merge.data.table(data.dt,

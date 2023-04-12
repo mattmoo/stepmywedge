@@ -16,7 +16,6 @@ generate.stat.dt(
   stat.per.site = F,
   statistic = "WMWU",
   other.predictors = NULL,
-  sort.input = T,
   progress.bar = T,
   ...
 )
@@ -33,9 +32,7 @@ generate.stat.dt(
 each site on each permutation, if not site will be ignored. MAy not be a
 good idea to use TRUE}
 
-\item{statistic}{Can be WMWU or ANOVA.}
-
-\item{sort.input}{Will sort the input by outcome (by reference), which slightly speeds ranking/}
+\item{statistic}{Can be WMWU, ANOVA, or mean_diff.}
 
 \item{...}{Passed on to the test}
 }
