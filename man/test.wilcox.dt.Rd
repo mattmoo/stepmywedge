@@ -4,7 +4,7 @@
 \alias{test.wilcox.dt}
 \title{Do a wilcox test on a data.table.}
 \usage{
-test.wilcox.dt(data.dt, two.sided = T, tie.correction = NULL, sort.input = F)
+test.wilcox.dt(data.dt, two.sided = T, tie.correction = NULL)
 }
 \arguments{
 \item{data.dt}{data.table with two-level grouping factor 'group' and outcome 'outcome''}
@@ -12,8 +12,6 @@ test.wilcox.dt(data.dt, two.sided = T, tie.correction = NULL, sort.input = F)
 \item{two.sided}{Do a two sided test?}
 
 \item{tie.correction}{Apply tie correction (slightly slower, but sometimes necessary). If NULL, tie correction will be applied if there are.}
-
-\item{sort.input}{Sorts the input by reference, this enables faster ranking (i.e. speeds permutation test)}
 }
 \value{
 A data.table containing statistics, including z score and theoretical p value (e.g. z.dt$z).
