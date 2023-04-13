@@ -196,9 +196,9 @@ generate.stat.dt = function(max.r,
       }
     } else if (statistic == 'mean_diff') { #Mean difference
       if (!stat.per.site) {
-        stat = perm.data.dt[, mean(get(outcome.col.name)), by = c( intervention.col.name)][, diff(V1)]
+        stat = perm.data.dt[, mean(get(outcome.col.name)), by = c( intervention.col.name)][order(get(intervention.col.name)), diff(V1)]
       } else {
-        stat = perm.data.dt[, mean(get(outcome.col.name)), by = c('site', intervention.col.name)][, diff(V1), by = site][, V1]
+        stat = perm.data.dt[, mean(get(outcome.col.name)), by = c('site', intervention.col.name)][order(site, get(intervention.col.name)), diff(V1), by = site][, V1]
       }
     } else if (statistic == 'WMWU.DT') { #WMWMU
       # if (!stat.per.site) {
