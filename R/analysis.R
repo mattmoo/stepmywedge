@@ -202,7 +202,7 @@ generate.stat.dt = function(max.r,
       }
     } else if (statistic == 'chisq') { #Mean difference
       if (!stat.per.site) {
-        stat = perm.data.dt[, coin::statistic(coin::chisq_test(table(.(group = droplevels(group), outcome = outcome))))]
+        stat = perm.data.dt[, coin::statistic(coin::chisq_test(table(.(group = droplevels(get(intervention.col.name)), outcome = get(outcome.col.name)))))]
       } else {
         # stat = perm.data.dt[, mean(get(outcome.col.name)), by = c('site', intervention.col.name)][order(site, get(intervention.col.name)), diff(V1), by = site][, V1]
         stop('Per site not supported for chisq')
