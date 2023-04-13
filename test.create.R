@@ -41,7 +41,7 @@ trial01$generate.study.dt()
 trial01$set.sim.parameters(sim.ppt.per.unit.time.mean = 1.7,
                            sim.ppt.per.unit.time.sd = .2,
                            sim.normal.preintervention.mean = 15,
-                           sim.normal.intervention.effect.mean = .75,
+                           sim.normal.intervention.effect.mean = 1.75,
                            sim.normal.intervention.effect.sd = .6,
                            sim.site.effect.mean = 0,
                            sim.site.effect.sd = 2,
@@ -53,18 +53,22 @@ trial01$set.sim.parameters(sim.ppt.per.unit.time.mean = 1.7,
 trial01$generate.site.sim.parameters()
 trial01$generate.sim.data.normal(save.intermediates = FALSE)
 
-# a = trial01$data.dt[group != 'transition',.(stat = coin::statistic(coin::wilcox_test(outcome ~ group, .SD, exact=F))), by = site][,stat]
+trial01$data.dt[, outcome := as.numeric(outcome >= 15)]
+# saasas
+# a = trial01$data.dt[group != 'transition',.(stat = coin::statistic(coin::chisq_test(outcome ~ group, .SD, exact=F))), by = site][,stat]
 # b = coin::statistic(coin::wilcox_test(outcome ~ group, data = trial01$data.dt[group != 'transition']))
 
 # perm.data.dt = trial01$data.dt[group != 'transition']
-
+# b = coin::statistic(coin::chisq_test(table(perm.data.dt[, .(group, outcome)])))
+# asasas
+#
 # c = perm.data.dt[, mean(get(outcome.col.name)), by = c('site', intervention.col.name)
 #                  ][, diff(V1), by = site
 #                    ][, V1]
-# c = perm.data.dt[group != 'transition',.(stat = coin::statistic(coin::wilcox_test(outcome ~ group, .SD, exact=F))), by = site][,stat]
-# b = coin::statistic(coin::wilcox_test(outcome ~ group, data = trial01$data.dt[group != 'transition']))
-trial01$generate.stat.dt(1000, statistic = 'mean_diff')
-trial01$generate.stat.dt(1000, statistic = 'WMWU')
+# # c = perm.data.dt[group != 'transition',.(stat = coin::statistic(coin::wilcox_test(outcome ~ group, .SD, exact=F))), by = site][,stat]
+# # b = coin::statistic(coin::wilcox_test(outcome ~ group, data = trial01$data.dt[group != 'transition']))
+# trial01$generate.stat.dt(1000, statistic = 'mean_diff')
+trial01$generate.stat.dt(1000, statistic = 'chisq')
 
 
 p = trial01$stat.dt[permuted == TRUE, mean(stat <= trial01$stat.dt[permuted == 'FALSE', stat])]
