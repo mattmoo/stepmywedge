@@ -10,7 +10,7 @@
 #' @param stat.per.site If TRUE, the statistic will be calculated separately for
 #'   each site on each permutation, if not site will be ignored. MAy not be a
 #'   good idea to use TRUE
-#' @param statistic Can be WMWU, ANOVA, or mean_diff.
+#' @param statistic Can be WMWU, ANOVA, mean_diff, chisq, or risk_ratio.
 #' @param ... Passed on to the test
 #' @return A data.table with the statistic value at each permutation (with zero
 #'   as the unpermuted comparison). May be divided by site if requested.
@@ -195,10 +195,19 @@ generate.stat.dt = function(max.r,
         stat = perm.data.dt[,.(stat = coin::statistic(coin::wilcox_test(form, .SD, exact=F))), by = site][,stat]
       }
     } else if (statistic == 'mean_diff') { #Mean difference
+      diff_fn = function(x) x[2]-x[1]
       if (!stat.per.site) {
-        stat = coin::statistic(coin::chisq_test(table(perm.data.dt[, .(droplevels(group), outcome)])))
+        # print(perm.data.dt[, mean(get(outcome.col.name)), by = c(intervention.col.name)][order(get(intervention.col.name)), diff(V1)])
+        stat = perm.data.dt[, mean(get(outcome.col.name)), by = c(intervention.col.name)][order(get(intervention.col.name)), diff_fn(V1)]
       } else {
-        stat = perm.data.dt[, mean(get(outcome.col.name)), by = c('site', intervention.col.name)][order(site, get(intervention.col.name)), diff(V1), by = site][, V1]
+        stat = perm.data.dt[, mean(get(outcome.col.name)), by = c('site', intervention.col.name)][order(site, get(intervention.col.name)), diff_fn(V1), by = site][, V1]
+      }
+    } else if (statistic == 'risk_ratio') { # Risk ratio
+      ratio_fn = function(x) x[2]/x[1]
+      if (!stat.per.site) {
+        stat = perm.data.dt[, mean(get(outcome.col.name)), by = c(intervention.col.name)][order(get(intervention.col.name)), ratio_fn(V1)]
+      } else {
+        stat = perm.data.dt[, mean(get(outcome.col.name)), by = c('site', intervention.col.name)][order(site, get(intervention.col.name)), ratio_fn(V1), by = site][, V1]
       }
     } else if (statistic == 'chisq') { #Mean difference
       if (!stat.per.site) {

@@ -68,7 +68,7 @@ trial01$data.dt[, outcome := as.numeric(outcome >= 15)]
 # # c = perm.data.dt[group != 'transition',.(stat = coin::statistic(coin::wilcox_test(outcome ~ group, .SD, exact=F))), by = site][,stat]
 # # b = coin::statistic(coin::wilcox_test(outcome ~ group, data = trial01$data.dt[group != 'transition']))
 # trial01$generate.stat.dt(1000, statistic = 'mean_diff')
-trial01$generate.stat.dt(1000, statistic = 'chisq')
+trial01$generate.stat.dt(100, statistic = 'mean_diff')
 
 
 p = trial01$stat.dt[permuted == TRUE, mean(stat <= trial01$stat.dt[permuted == 'FALSE', stat])]
