@@ -61,10 +61,21 @@ SW.Cluster = setRefClass(
     },
 
     generate.site.dt = function() {
-      cluster.dt <<- data.table::data.table(
-        cluster = name,
-        site = get.site.names()
-      )
+      # cluster.dt <<- data.table::data.table(
+      #   cluster = name,
+      #   site = get.site.names()
+      # )
+      #
+      cluster.dt <<-
+        rbindlist(lapply(
+          X = sites,
+          FUN = function(x)
+            data.table(
+              cluster = name,
+              site = x$name,
+              randomisation.group = x$randomisation.group
+            )
+        ))
     }
 
   )

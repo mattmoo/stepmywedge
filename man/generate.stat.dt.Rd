@@ -32,7 +32,7 @@ generate.stat.dt(
 each site on each permutation, if not site will be ignored. MAy not be a
 good idea to use TRUE}
 
-\item{statistic}{Can be WMWU, ANOVA, or mean_diff.}
+\item{statistic}{Can be WMWU, ANOVA, mean_diff, chisq, or risk_ratio.}
 
 \item{...}{Passed on to the test}
 }

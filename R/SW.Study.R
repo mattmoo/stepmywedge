@@ -552,6 +552,7 @@ SW.Study = setRefClass(
                                                 data.dt = data.dt,
                                                 cluster.dt = cluster.dt,
                                                 study.dt = study.dt,
+                                                site.dt = site.dt,
                                                 perm.dt = perm.dt,
                                                 stat.per.site = stat.per.site,
                                                 statistic = statistic,

@@ -21,6 +21,7 @@ generate.stat.dt = function(max.r,
                             data.dt,
                             cluster.dt,
                             study.dt,
+                            site.dt,
                             perm.dt = NULL,
                             stat.per.site = F,
                             statistic = 'WMWU',
@@ -32,17 +33,15 @@ generate.stat.dt = function(max.r,
   #It will probably streamline the calculations if I precalculate the intervention
   #and control groups for each site for each cluster (i.e. sequence).
   #This could fail for very large data sets.
-  hypothetical.data.dt = data.table::data.table(expand.grid(site = study.dt[,levels(site)],cluster = study.dt[,levels(cluster)]))
-  #This could be vectorised, but won't be the most compute-heavy part anyway.
 
-  #Iterate through the different assignments of site to clusters, making tables of
-  #what the groups would look like.
+  hypothetical.data.dt = data.table::data.table(expand.grid(randomisation.group = study.dt[, unique(randomisation.group)], cluster = study.dt[, levels(cluster)]))
+  hypothetical.data.dt = merge(
+    x = hypothetical.data.dt,
+    y = unique(site.dt[, .(randomisation.group, site)]),
+    by = 'randomisation.group',
+    allow.cartesian = TRUE
+  )
 
-  #No per site calculations for ANOVA
-  #It could probably be implemented, but it might not be a good idea.
-  if (statistic == 'ANOVA') {
-    stat.per.site = F
-  }
 
   # if (sort.input == T) {
   setorderv(data.dt, cols = c(outcome.col.name, intervention.col.name))
@@ -53,7 +52,6 @@ generate.stat.dt = function(max.r,
   if (progress.bar == T) {
     pb = txtProgressBar(style = 3, char = '|')
   }
-  t = Sys.time()
 
   for (row.ind in 1:nrow(hypothetical.data.dt)) {
     #Make a table of what the groups would look like if that site was in that cluster.
@@ -94,26 +92,27 @@ generate.stat.dt = function(max.r,
     }
   }
 
+
   if (progress.bar == T) {
     close(pb)
   }
-  elapsed = Sys.time()-t
-  message(paste("Time elapsed: "),hms::as.hms(elapsed))
-  message("")
 
   #Now let's figure out how to permute things.
   if (is.null(perm.dt)) {
     perm.dt = generate.perm.dt(study.dt, max.r = max.r)
-  } else if ((ncol(perm.dt)-1) != max.r) {
-    message(paste0("Number of permutations in perm.dt: ", (ncol(perm.dt)-1)))
+    print(perm.dt)
+  } else if (perm.dt[, uniqueN(permutation)] != max.r) {
+    message(paste0("Number of permutations in perm.dt: ", (perm.dt[, uniqueN(permutation)])))
     message(paste0("Number of requested permutations: ", max.r))
-    if ((ncol(perm.dt)-1) > max.r) {
+    if (perm.dt[, uniqueN(permutation)] > max.r) {
       message(paste0("First ", max.r, " permutations will be used."))
     } else {
-      message(paste0("max.r changed to "), (ncol(perm.dt)-1))
-      max.r = (ncol(perm.dt)-1)
+      message(paste0("max.r changed to "), (perm.dt[, uniqueN(permutation)]))
+      max.r = perm.dt[, uniqueN(permutation)]
     }
   }
+
+
   #Set up a table for stats from all permutations, differs in dimension
   #depending on whether you want one stat per site or not.
   if (!stat.per.site) {
@@ -147,27 +146,32 @@ generate.stat.dt = function(max.r,
 
   # for (perm.ind in 0:max.r) {
   perform.permutation.step = function(perm.ind) {
+
     t2 = Sys.time()
     #Permutation 0 is the actual data.
     if (perm.ind>0) {
-      #Rename the relevant permutation's column to pick it out.
-      old.col.name = names(perm.dt)[perm.ind+1]
-      data.table::setnames(x = perm.dt,
-                           old = perm.ind+1,
-                           new = "cluster.perm")
+      # #Rename the relevant permutation's column to pick it out.
+      # old.col.name = names(perm.dt)[perm.ind+1]
+      # data.table::setnames(x = perm.dt,
+      #                      old = perm.ind+1,
+      #                      new = "cluster.perm")
+
       #Shuffle the clusters between sites.
       perm.data.dt = data.table::rbindlist(
         data.table:::merge.data.table(
-          x = perm.dt[, .(site, cluster.perm)],
+          x = perm.dt[permutation == perm.ind, .(site, cluster)],
           y = hypothetical.data.dt,
-          by.x = c("site", "cluster.perm"),
-          by.y = c("site", "cluster")
+          # by.x = c("site", "cluster.perm"),
+          # by.y = c("site", "cluster")
+          by = c("site", "cluster")
         )$data.dt
         #Make sure to remove transition!
       )[get(intervention.col.name) != "transition"]
     } else {
       perm.data.dt = data.dt[get(intervention.col.name) != "transition"]
     }
+
+    # print(names(perm.data.dt))
     # message(c('t1_d = ', Sys.time() - t2))
 
     #Put the statistic in the table we setup.
@@ -218,27 +222,27 @@ generate.stat.dt = function(max.r,
       }
     } else if (statistic == 'WMWU.DT') { #WMWMU
       # if (!stat.per.site) {
-        # message(c('t2_d = ', Sys.time() - t2))
+      # message(c('t2_d = ', Sys.time() - t2))
 
       # data.table::set(x = stat.dt,
       #                   i = which(stat.dt[,perm.num == perm.ind]),
       #                   j = "stat",
       #                   value =  test.wilcox.dt(perm.data.dt)$z)
       stat = test.wilcox.dt(perm.data.dt)$z
-        # message(c('t3_d = ', Sys.time() - t2))
+      # message(c('t3_d = ', Sys.time() - t2))
       # }
     } else {
       stop(paste(statistic, 'is not a supported statistic'))
     }
 
 
-    #Permutation 0 is the actual data.
-    if (perm.ind>0) {
-      #Reset name to what it was before
-      data.table::setnames(x = perm.dt,
-                           old = perm.ind+1,
-                           new = old.col.name)
-    }
+    # #Permutation 0 is the actual data.
+    # if (perm.ind>0) {
+    #   #Reset name to what it was before
+    #   data.table::setnames(x = perm.dt,
+    #                        old = perm.ind+1,
+    #                        new = old.col.name)
+    # }
 
     # message(c('t4_d = ', Sys.time() - t2))
 
@@ -270,13 +274,14 @@ generate.stat.dt = function(max.r,
     close(pb)
   }
   elapsed = Sys.time()-t
-  message(paste("Time elapsed: "),hms::as.hms(elapsed))
+  message(paste("Time elapsed: "),hms::as_hms(elapsed))
   message("")
 
   #Also give it a z-transform
   data.table::set(x = stat.dt,
                   j = "z",
                   value = scale(stat.dt$stat, center = T, scale = T))
+
 
   return(stat.dt)
 }
@@ -352,33 +357,72 @@ test.wilcox.dt = function(data.dt,
 #' Generate a table that holds a number of ways in which to permute sites to
 #' different clusters.
 #'
-#' @param study.dt A study info data.table, containing site, cluster, and timing info.
+#' @param study.dt A study info data.table, containing site, cluster, and timing
+#'   info.
 #' @param max.r Number of permutations.
+#' @param max.iterations Duplicates are avoided with a while loop, it will time
+#'   out after this many iterations.
 #' @return A data.table containing all the permutations of site to cluster.
 #'
 #' @export
-generate.perm.dt = function(study.dt, max.r = 1000) {
+generate.perm.dt = function(study.dt, max.r = 1000, max.iterations = 10) {
+
 
   #Find out roughly how many computations are possible.
-  max.poss.r = factorial(nrow(study.dt))
+  max.poss.r = study.dt[, .N, by = randomisation.group][, matrixStats::product(factorial(N))]
 
   #Adjust max iterations if necessary.
   if (max.poss.r < max.r) {
+    warning(paste(max.r, 'permutations requested, but only',
+                  max.poss.r, 'possible. Setting max.r to', max.poss.r))
+
     max.r = max.poss.r
   }
 
-  #If there aren't heaps more possible iterations than the number requested,
-  if (max.r*10 > max.poss.r) {
-    #Get all permutations
-    perm.dt = transpose(do.call(data.table,combinat::permn(study.dt$cluster)))
-    #Get a random sample of the number that you really want.
-    perm.dt = perm.dt[sample(x = 1:nrow(perm.dt), size = max.r)]
-  } else {
-    #If there are heaps of possible permutations, get a random sample without ensuring that they're unique, it's probably good enough.
-    perm.dt = transpose(do.call(data.table,lapply(rep(1,max.r), function(n) sample(study.dt$cluster))))
+  # Set up a data table.
+  perm.dt = data.table()
+  iteration = 0
+
+  while (iteration < max.iterations) {
+
+    # Create a number of permutations.
+    iteration.perm.dt = rbindlist(lapply(
+      X = 1:max.r,
+      FUN = function(x)
+        study.dt[, .(permutation = max.r * iteration + x,
+                     site = sample(site),
+                     cluster), by = randomisation.group]
+    ))
+
+    # Add them to the other ones.
+    perm.dt = rbindlist(list(perm.dt,
+                             iteration.perm.dt),
+                        use.names = TRUE)[order(permutation, cluster, randomisation.group, site)]
+
+    # Check for uniqueness, hope you've got no semi-colons in your column names!
+    perm.dt = perm.dt[permutation %in% perm.dt[, .(site_char = paste(site, collapse = ';')), by = permutation][!duplicated(site_char), permutation]]
+
+    iteration = iteration + 1
+
+    # If we've reached the right number, break and get the requested number.
+    if (perm.dt[, uniqueN(permutation)] > max.r) {
+      perm.dt = perm.dt[permutation %in% perm.dt[, unique(permutation)][1:max.r]]
+      break
+    }
+
+    # Warning for reaching the limit, should probably make up something better for
+    # situations where there are not many possible permutations.
+    if (iteration == max.iterations & all.equal(perm.dt[, uniqueN(permutation)], max.r) != TRUE) {
+      warning(paste('Generating permutations stopped with only',
+                    perm.dt[, uniqueN(permutation)],
+                    'unique permutations.'))
+    }
   }
 
-  return(cbind(data.table(site = study.dt$site), transpose(perm.dt)))
+  # Number iterations 1:max
+  perm.dt[, permutation := as.numeric(as.factor(permutation))]
+
+  return(perm.dt)
 }
 
 #' Applies a few tests to a statistic table, generated by generate.stat.dt I

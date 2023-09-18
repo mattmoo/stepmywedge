@@ -29,11 +29,14 @@ SW.Site = setRefClass(
                 sim.normal.sd = "numeric",
                 sim.normal.effect.per.unit.time = "numeric",
 
-                timed.sampling.dist = "I.Sampler"),
+                timed.sampling.dist = "I.Sampler",
+
+                randomisation.group = "numeric"),
   methods = list(
-    initialize = function(name = 'Site') {
+    initialize = function(name = 'Site', randomisation.group = NA_integer_) {
       "Initialize site with a name."
       name <<- name
+      randomisation.group <<- randomisation.group
     },
     get.name = function() {
       return(name)
