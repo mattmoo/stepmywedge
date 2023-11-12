@@ -5,12 +5,16 @@
 \title{Generate a table that holds a number of ways in which to permute sites to
 different clusters.}
 \usage{
-generate.perm.dt(study.dt, max.r = 1000)
+generate.perm.dt(study.dt, max.r = 1000, max.iterations = 10)
 }
 \arguments{
-\item{study.dt}{A study info data.table, containing site, cluster, and timing info.}
+\item{study.dt}{A study info data.table, containing site, cluster, and timing
+info.}
 
 \item{max.r}{Number of permutations.}
+
+\item{max.iterations}{Duplicates are avoided with a while loop, it will time
+out after this many iterations.}
 }
 \value{
 A data.table containing all the permutations of site to cluster.

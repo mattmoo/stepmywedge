@@ -21,4 +21,4 @@ Imports:
   combinat (>= 0.0),
   hms (>= 0.4.2),
   methods
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3

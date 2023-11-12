@@ -12,8 +12,11 @@ generate.stat.dt(
   data.dt,
   cluster.dt,
   study.dt,
+  site.dt,
   perm.dt = NULL,
-  stat.per.site = F,
+  stat.dt.level = c("study", "cluster", "site")[1],
+  equal.weight.site = F,
+  equal.weight.cluster = F,
   statistic = "WMWU",
   other.predictors = NULL,
   progress.bar = T,
@@ -28,13 +31,13 @@ generate.stat.dt(
 \item{intervention.col.name}{NAme of the column containing the intervention
 (i.e. has levels "control" and "intervention")}
 
-\item{stat.per.site}{If TRUE, the statistic will be calculated separately for
-each site on each permutation, if not site will be ignored. MAy not be a
-good idea to use TRUE}
-
 \item{statistic}{Can be WMWU, ANOVA, mean_diff, chisq, or risk_ratio.}
 
 \item{...}{Passed on to the test}
+
+\item{stat.per.site}{If TRUE, the statistic will be calculated separately for
+each site on each permutation, if not site will be ignored. MAy not be a
+good idea to use TRUE}
 }
 \value{
 A data.table with the statistic value at each permutation (with zero

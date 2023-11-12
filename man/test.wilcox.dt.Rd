@@ -4,17 +4,29 @@
 \alias{test.wilcox.dt}
 \title{Do a wilcox test on a data.table.}
 \usage{
-test.wilcox.dt(data.dt, two.sided = T, tie.correction = NULL)
+test.wilcox.dt(
+  data.dt,
+  two.sided = T,
+  tie.correction = NULL,
+  stratification_var_name = NULL
+)
 }
 \arguments{
-\item{data.dt}{data.table with two-level grouping factor 'group' and outcome 'outcome''}
+\item{data.dt}{data.table with two-level grouping factor 'group' and outcome
+'outcome''}
 
 \item{two.sided}{Do a two sided test?}
 
-\item{tie.correction}{Apply tie correction (slightly slower, but sometimes necessary). If NULL, tie correction will be applied if there are.}
+\item{tie.correction}{Apply tie correction (slightly slower, but sometimes
+necessary). If NULL, tie correction will be applied if there are.}
+
+\item{stratification_var_name}{Variable name to be subtracted as a
+stratification variable (included with the intention to use Hodges-Lehmann
+position indicator, i.e., pseudomedian)}
 }
 \value{
-A data.table containing statistics, including z score and theoretical p value (e.g. z.dt$z).
+A data.table containing statistics, including z score and theoretical
+  p value (e.g. z.dt$z).
 }
 \description{
 Do a wilcox test on a data.table.

@@ -37,6 +37,6 @@ non-normal data.}
 \section{Methods}{
 
 \describe{
-\item{\code{initialize(name = "Site")}}{Initialize site with a name.}
+\item{\code{initialize(name = "Site", randomisation.group = NA_integer_)}}{Initialize site with a name.}
 }}
 

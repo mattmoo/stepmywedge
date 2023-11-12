@@ -23,7 +23,9 @@ generate.stat.dt = function(max.r,
                             study.dt,
                             site.dt,
                             perm.dt = NULL,
-                            stat.per.site = F,
+                            stat.dt.level = c('study', 'cluster', 'site')[1],
+                            equal.weight.site = F,
+                            equal.weight.cluster = F,
                             statistic = 'WMWU',
                             other.predictors = NULL,
                             # sort.input = T,
@@ -288,15 +290,22 @@ generate.stat.dt = function(max.r,
 
 #' Do a wilcox test on a data.table.
 #'
-#' @param data.dt data.table with two-level grouping factor 'group' and outcome 'outcome''
+#' @param data.dt data.table with two-level grouping factor 'group' and outcome
+#'   'outcome''
 #' @param two.sided Do a two sided test?
-#' @param tie.correction Apply tie correction (slightly slower, but sometimes necessary). If NULL, tie correction will be applied if there are.
-#' @return A data.table containing statistics, including z score and theoretical p value (e.g. z.dt$z).
+#' @param tie.correction Apply tie correction (slightly slower, but sometimes
+#'   necessary). If NULL, tie correction will be applied if there are.
+#' @param stratification_var_name Variable name to be subtracted as a
+#'   stratification variable (included with the intention to use Hodges-Lehmann
+#'   position indicator, i.e., pseudomedian)
+#' @return A data.table containing statistics, including z score and theoretical
+#'   p value (e.g. z.dt$z).
 #'
 #' @export
 test.wilcox.dt = function(data.dt,
                           two.sided = T,
-                          tie.correction = NULL) {
+                          tie.correction = NULL,
+                          stratification_var_name = NULL) {
 
   #What proportion of values should be unique to apply tie correction (if not
   #explicitly enabled/disabled)
@@ -305,7 +314,7 @@ test.wilcox.dt = function(data.dt,
   t = Sys.time()
 
   # if (sort.input) {
-    setorder(data.dt, outcome)
+  setorder(data.dt, outcome)
   # }
   if (is.null(tie.correction)) {
     tie.correction = length(data.dt[,unique(outcome)]) < nrow(data.dt)*tie.correction.threshold
@@ -313,9 +322,22 @@ test.wilcox.dt = function(data.dt,
 
   # message(paste('t0 = ', Sys.time()-t ))
 
+
+
   #Do WMW
-  #Assign ranks to outcomes
-  data.dt[, rank := frank(outcome, ties.method = 'average')]
+  if (is.null(stratification_var_name)) {
+    data.dt[, rank := frank(outcome, ties.method = 'average')]
+  } else {
+    data.dt[, rank := frank(outcome - get(stratification_var_name), ties.method = 'average')]
+  }
+  # #Assign ranks to outcomes
+  # if (!hodgeslehmann) {
+  # } else {
+  #   data.dt[, rank := senstrat::hodgeslehmann(y = data.dt$outcome,
+  #                                             z = data.dt$group,
+  #                                             st = data.dt$site,
+  #                                             align = 'hl')]
+  # }
 
 
   #Make a data.table with rank sums and n per group.
@@ -353,6 +375,7 @@ test.wilcox.dt = function(data.dt,
 
   return(z.dt)
 }
+
 
 #' Generate a table that holds a number of ways in which to permute sites to
 #' different clusters.
@@ -494,5 +517,41 @@ test.wilcoxon.ANOVA = function(data.dt, outcome.col.name = 'outcome', interventi
 test.wilcoxon.ANOVA.form = function(data.dt, form) {
 
   return(aov(form, data = data.dt))
+
+}
+
+#' Cut down version of wilcox.test that only returns the pseudo-median without
+#' CIs. Uses Rfast for a little bit of a speed boost.
+#'
+#' @param x Vector of values.
+#' @return Pseudo-median of x
+#'
+#' @export
+pseudo_median = function(x) {
+
+  ## These are sample based limits for the median
+  ## [They don't work if alpha is too high]
+  mumin <- min(x)
+  mumax <- max(x)
+
+  ## wdiff(d, zq) returns the absolute difference between
+  ## the asymptotic Wilcoxon statistic of x - mu - d and
+  ## the quantile zq.
+  wdiff <- function(d, zq) {
+    xd <- x - d
+    xd <- xd[xd != 0]
+    nx <- length(xd)
+    dr <- rank(abs(xd))
+    zd <- sum(dr[xd > 0]) - nx * (nx + 1)/4
+
+  }
+
+  diffs = Rfast::Sort(Rfast::upper_tri(Rfast::Outer(x, x, "+"), diag = TRUE) / 2)
+
+  ESTIMATE <- c("(pseudo)median" =
+                  uniroot(wdiff, c(mumin, mumax), tol=1e-4,
+                          zq = 0)$root)
+
+  return(ESTIMATE)
 
 }
