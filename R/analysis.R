@@ -524,10 +524,17 @@ test.wilcoxon.ANOVA.form = function(data.dt, form) {
 #' CIs. Uses Rfast for a little bit of a speed boost.
 #'
 #' @param x Vector of values.
+#' @param max_length Because the outer product is calculated, large numbers of
+#'   observations will result in a vector that cannot be allocated.
 #' @return Pseudo-median of x
 #'
 #' @export
-pseudo_median = function(x) {
+pseudo_median = function(x, max_length = 20000) {
+
+  if (length(x) > max_length) {
+    message(paste0('pseudo_median: x has more than ', length(x), ' elements, sampling ', max_length))
+    x = sample(x = x, size = max_length)
+  }
 
   ## These are sample based limits for the median
   ## [They don't work if alpha is too high]
