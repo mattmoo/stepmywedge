@@ -1,6 +1,6 @@
 Package: stepmywedge
 Title: Data structures and load functions for managing stepped wedge cluster-randomised trials.
-Version: 0.0.0.9320
+Version: 0.0.0.9330
 Authors@R: 
     person(given = "Matthew",
            family = "Moore",
