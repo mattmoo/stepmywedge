@@ -298,6 +298,8 @@ generate.stat.dt = function(max.r,
 #' @param stratification_var_name Variable name to be subtracted as a
 #'   stratification variable (included with the intention to use Hodges-Lehmann
 #'   position indicator, i.e., pseudomedian)
+#' @param group_col_name Name of treatment column
+#' @param outcome_col_name Name of outcome column
 #' @return A data.table containing statistics, including z score and theoretical
 #'   p value (e.g. z.dt$z).
 #'
@@ -307,7 +309,7 @@ test.wilcox.dt = function(data.dt,
                           tie.correction = NULL,
                           stratification_var_name = NULL,
                           group_col_name = 'group',
-                          group_col_name = 'period.type') {
+                          outcome_col_name = 'outcome') {
 
   #What proportion of values should be unique to apply tie correction (if not
   #explicitly enabled/disabled)

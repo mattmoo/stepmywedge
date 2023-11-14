@@ -8,7 +8,9 @@ test.wilcox.dt(
   data.dt,
   two.sided = T,
   tie.correction = NULL,
-  stratification_var_name = NULL
+  stratification_var_name = NULL,
+  group_col_name = "group",
+  outcome_col_name = "outcome"
 )
 }
 \arguments{
@@ -23,6 +25,10 @@ necessary). If NULL, tie correction will be applied if there are.}
 \item{stratification_var_name}{Variable name to be subtracted as a
 stratification variable (included with the intention to use Hodges-Lehmann
 position indicator, i.e., pseudomedian)}
+
+\item{group_col_name}{Name of treatment column}
+
+\item{outcome_col_name}{Name of outcome column}
 }
 \value{
 A data.table containing statistics, including z score and theoretical
