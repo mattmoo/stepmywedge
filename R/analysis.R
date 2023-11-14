@@ -305,30 +305,27 @@ generate.stat.dt = function(max.r,
 test.wilcox.dt = function(data.dt,
                           two.sided = T,
                           tie.correction = NULL,
-                          stratification_var_name = NULL) {
+                          stratification_var_name = NULL,
+                          group_col_name = 'group',
+                          group_col_name = 'period.type') {
 
   #What proportion of values should be unique to apply tie correction (if not
   #explicitly enabled/disabled)
   tie.correction.threshold = .9
 
-  t = Sys.time()
-
-  # if (sort.input) {
   setorder(data.dt, outcome)
   # }
   if (is.null(tie.correction)) {
     tie.correction = length(data.dt[,unique(outcome)]) < nrow(data.dt)*tie.correction.threshold
   }
 
-  # message(paste('t0 = ', Sys.time()-t ))
-
 
 
   #Do WMW
   if (is.null(stratification_var_name)) {
-    data.dt[, rank := frank(outcome, ties.method = 'average')]
+    data.dt[, rank := frank(get(outcome_col_name), ties.method = 'average')]
   } else {
-    data.dt[, rank := frank(outcome - get(stratification_var_name), ties.method = 'average')]
+    data.dt[, rank := frank(get(outcome_col_name) - get(stratification_var_name), ties.method = 'average')]
   }
   # #Assign ranks to outcomes
   # if (!hodgeslehmann) {
@@ -339,9 +336,8 @@ test.wilcox.dt = function(data.dt,
   #                                             align = 'hl')]
   # }
 
-
   #Make a data.table with rank sums and n per group.
-  wmw.dt = data.dt[,.(R = sum(rank), n = .N), by = group]
+  wmw.dt = data.dt[,.(R = sum(rank), n = .N), by = group_col_name]
 
 
   #Calculate U for each group
@@ -359,7 +355,7 @@ test.wilcox.dt = function(data.dt,
   if (tie.correction == F) {
     z.dt[,sd.u := wmw.dt[,sqrt(prod(n)*(sum(n)+1)/12)]]
   } else {
-    z.dt[,sd.u := sqrt((n.a*n.b/((n.a+n.b)*(n.a+n.b-1))) * ((((n.a+n.b)^3-(n.a+n.b))/12)-sum(data.dt[,(.N^3-.N)/12, by = outcome])))]
+    z.dt[,sd.u := sqrt((n.a*n.b/((n.a+n.b)*(n.a+n.b-1))) * ((((n.a+n.b)^3-(n.a+n.b))/12)-sum(data.dt[,(.N^3-.N)/12, by = outcome_col_name])))]
   }
 
 
