@@ -315,10 +315,10 @@ test.wilcox.dt = function(data.dt,
   #explicitly enabled/disabled)
   tie.correction.threshold = .9
 
-  setorder(data.dt, outcome)
+  setorderv(data.dt, get(outcome_col_name))
   # }
   if (is.null(tie.correction)) {
-    tie.correction = length(data.dt[,unique(outcome)]) < nrow(data.dt)*tie.correction.threshold
+    tie.correction = length(data.dt[,unique(get(outcome_col_name))]) < nrow(data.dt)*tie.correction.threshold
   }
 
 
@@ -349,9 +349,9 @@ test.wilcox.dt = function(data.dt,
 
 
   #Get minimum U, n for each group, and also theoretical mean.
-  z.dt = cbind(wmw.dt[u == min(u), .(n.a=as.numeric(n), u = u)],
-               wmw.dt[u == max(u), .(n.b=as.numeric(n))],
-               wmw.dt[,.(m.u = prod(n)/2)])
+  z.dt = cbind(wmw.dt[u == min(u), .(n.a = as.numeric(n), u = u)],
+               wmw.dt[u == max(u), .(n.b = as.numeric(n))],
+               wmw.dt[, .(m.u = prod(n) / 2)])
 
   #Calculate theoretical SD, correcting for errors if requested.
   if (tie.correction == F) {
