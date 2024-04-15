@@ -315,7 +315,7 @@ test.wilcox.dt = function(data.dt,
   #explicitly enabled/disabled)
   tie.correction.threshold = .9
 
-  setorderv(data.dt, get(outcome_col_name))
+  setorderv(data.dt, outcome_col_name)
   # }
   if (is.null(tie.correction)) {
     tie.correction = length(data.dt[,unique(get(outcome_col_name))]) < nrow(data.dt)*tie.correction.threshold
