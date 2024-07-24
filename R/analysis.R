@@ -349,8 +349,8 @@ test.wilcox.dt = function(data.dt,
 
 
   #Get minimum U, n for each group, and also theoretical mean.
-  z.dt = cbind(wmw.dt[u == min(u), .(n.a = as.numeric(n), u = u)],
-               wmw.dt[u == max(u), .(n.b = as.numeric(n))],
+  z.dt = cbind(wmw.dt[1, .(n.a = as.numeric(n), u = u)],
+               wmw.dt[2, .(n.b = as.numeric(n))],
                wmw.dt[, .(m.u = prod(n) / 2)])
 
   #Calculate theoretical SD, correcting for errors if requested.
@@ -367,9 +367,10 @@ test.wilcox.dt = function(data.dt,
                   value = z.dt[,(u - m.u)/sd.u])
 
 
+  # Calculate p, forcing a negative Z (otherwise it's inaccurate)
   data.table::set(x = z.dt,
                   j = 'p',
-                  value = z.dt[,pnorm(z) * (1+two.sided)])
+                  value = z.dt[,pnorm(-sign(z) * z) * (1+two.sided)])
 
   return(z.dt)
 }
