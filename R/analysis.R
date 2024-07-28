@@ -339,7 +339,7 @@ test.wilcox.dt = function(data.dt,
   # }
 
   #Make a data.table with rank sums and n per group.
-  wmw.dt = data.dt[,.(R = sum(rank), n = .N), by = group_col_name]
+  wmw.dt = data.dt[order(-get(group_col_name)),.(R = sum(rank), n = .N), by = group_col_name]
 
 
   #Calculate U for each group
